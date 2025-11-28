@@ -147,10 +147,32 @@ volatile int tftHeight = VECTOR_DISPLAY_DEFAULT_WIDTH;
  **  Config LittleFS and SD storage
  *********************************************************************/
 void begin_storage() {
-    if (!LittleFS.begin(true)) { LittleFS.format(), LittleFS.begin(); }
+    Serial.println("\n[STORAGE] Initializing filesystem...");
+    
+    // Initialize internal flash (LittleFS) - always required
+    if (!LittleFS.begin(true)) { 
+        Serial.println("[STORAGE] LittleFS mount failed, formatting...");
+        LittleFS.format();
+        LittleFS.begin();
+        Serial.println("[STORAGE] LittleFS formatted and mounted");
+    } else {
+        Serial.println("[STORAGE] LittleFS mounted successfully");
+    }
+    
+    // Try to mount SD card (non-critical - device works without it)
+    Serial.println("[STORAGE] Attempting SD card mount...");
     bool checkFS = setupSdCard();
+    
+    if (checkFS) {
+        Serial.println("[STORAGE] Using SD card for configuration");
+    } else {
+        Serial.println("[STORAGE] Using internal flash for configuration");
+    }
+    
+    // Load configuration from available storage
     bruceConfig.fromFile(checkFS);
     bruceConfigPins.fromFile(checkFS);
+    Serial.println("[STORAGE] Configuration loaded successfully\n");
 }
 
 /*********************************************************************

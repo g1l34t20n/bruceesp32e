@@ -26,8 +26,15 @@ std::vector<FileList> fileList;
 ** Description:   Start SD Card
 ***************************************************************************************/
 bool setupSdCard() {
+#ifdef SDCARD_DISABLED
+    Serial.println("SD Card disabled in configuration (no card required)");
+    sdcardMounted = false;
+    return false;
+#endif
+
 #ifndef USE_SD_MMC
     if (bruceConfigPins.SDCARD_bus.sck < 0) {
+        Serial.println("SD Card pins not configured");
         sdcardMounted = false;
         return false;
     }
@@ -47,8 +54,11 @@ bool setupSdCard() {
 #else
     // Not using InputHandler (SdCard on default &SPI bus)
     if (task) {
-        if (!SD.begin((int8_t)bruceConfigPins.SDCARD_bus.cs)) result = false;
-        // Serial.println("Task not activated");
+        Serial.println("Attempting SD card initialization (default SPI)...");
+        if (!SD.begin((int8_t)bruceConfigPins.SDCARD_bus.cs)) {
+            Serial.println("SD.begin() failed on default SPI bus");
+            result = false;
+        }
     }
     // SDCard in the same Bus as TFT, in this case we call the SPI TFT Instance
     else if (bruceConfigPins.SDCARD_bus.mosi == (gpio_num_t)TFT_MOSI &&
@@ -67,20 +77,30 @@ bool setupSdCard() {
     // If not using TFT Bus, use a specific bus
     else {
     NEXT:
+        Serial.println("Starting dedicated SD card SPI bus...");
         sdcardSPI.begin(
             (int8_t)bruceConfigPins.SDCARD_bus.sck,
             (int8_t)bruceConfigPins.SDCARD_bus.miso,
             (int8_t)bruceConfigPins.SDCARD_bus.mosi,
             (int8_t)bruceConfigPins.SDCARD_bus.cs
         ); // start SPI communications
+        Serial.println("SPI bus initialized, attempting SD.begin()...");
         delay(10);
-        if (!SD.begin((int8_t)bruceConfigPins.SDCARD_bus.cs, sdcardSPI)) result = false;
-        Serial.println("SDCard in a different Bus, using sdcardSPI instance");
+        if (!SD.begin((int8_t)bruceConfigPins.SDCARD_bus.cs, sdcardSPI)) {
+            Serial.println("SD.begin() failed on dedicated SPI bus");
+            result = false;
+        } else {
+            Serial.println("SDCard in a different Bus, using sdcardSPI instance");
+        }
     }
 #endif
 
     if (result == false) {
-        Serial.println("SDCARD NOT mounted, check wiring and format");
+        Serial.println("========================================");
+        Serial.println("SD CARD NOT MOUNTED");
+        Serial.println("This is OK if no SD card is inserted.");
+        Serial.println("Device will continue without SD storage.");
+        Serial.println("========================================");
         sdcardMounted = false;
         return false;
     } else {
