@@ -243,3 +243,43 @@ If you find any issues or improvements needed for the ESP32-32E support:
 **Date**: November 28, 2024  
 **Repository**: https://github.com/g1l34t20n/bruceesp32e  
 **Based on**: Bruce firmware with CYD board support
+
+## RGB LED Usage Note
+
+The ESP32-32E has **individual RGB LED pins** (common anode), not an addressable LED strip like WS2812B. This means:
+
+- **No FastLED library needed** - LEDs are controlled directly via GPIO
+- **Control method**: Use `digitalWrite()` directly on RGB_LED_R, RGB_LED_G, RGB_LED_B
+- **Common anode wiring**: Write `LOW` to turn ON, `HIGH` to turn OFF
+- **Pins**: Red=22, Green=16, Blue=17
+
+### Example RGB LED Control Code
+
+```cpp
+// Turn on RED LED
+digitalWrite(RGB_LED_R, LOW);  // LOW = ON for common anode
+digitalWrite(RGB_LED_G, HIGH); // HIGH = OFF
+digitalWrite(RGB_LED_B, HIGH);
+
+// Turn on GREEN LED
+digitalWrite(RGB_LED_R, HIGH);
+digitalWrite(RGB_LED_G, LOW);
+digitalWrite(RGB_LED_B, HIGH);
+
+// Turn on BLUE LED
+digitalWrite(RGB_LED_R, HIGH);
+digitalWrite(RGB_LED_G, HIGH);
+digitalWrite(RGB_LED_B, LOW);
+
+// PURPLE (Red + Blue)
+digitalWrite(RGB_LED_R, LOW);
+digitalWrite(RGB_LED_G, HIGH);
+digitalWrite(RGB_LED_B, LOW);
+
+// Turn OFF all LEDs
+digitalWrite(RGB_LED_R, HIGH);
+digitalWrite(RGB_LED_G, HIGH);
+digitalWrite(RGB_LED_B, HIGH);
+```
+
+The firmware's LED control system handles this automatically through the GPIO interface.
