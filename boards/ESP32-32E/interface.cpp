@@ -184,7 +184,9 @@ void InputHandler(void) {
             touchPoint.x = t.x;
             touchPoint.y = t.y;
             touchPoint.pressed = true;
+#ifdef HAS_TOUCH
             touchHeatMap(touchPoint);
+#endif
         END:
             d_tmp = millis();
         }
