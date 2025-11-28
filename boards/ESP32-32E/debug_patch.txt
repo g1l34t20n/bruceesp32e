@@ -1,0 +1,39 @@
+# Instructions to manually add debug prints to src/main.cpp:
+
+After line ~377 (Serial.begin(115200);):
+    Serial.println("\n\n========================================");
+    Serial.println("[DEBUG] setup() STARTED");
+    Serial.println("========================================");
+    Serial.flush(); delay(100);
+
+After line ~395 (setup_gpio();):
+    Serial.println("[DEBUG] setup_gpio() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~398 (tft.init();):
+    Serial.println("[DEBUG] tft.init() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~404 (tft.drawCentreString("Booting"...);):
+    Serial.println("[DEBUG] 'Booting' text displayed");
+    Serial.flush(); delay(100);
+
+After line ~407 (begin_storage();):
+    Serial.println("[DEBUG] begin_storage() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~408 (begin_tft();):
+    Serial.println("[DEBUG] begin_tft() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~409 (init_clock();):
+    Serial.println("[DEBUG] init_clock() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~410 (init_led();):
+    Serial.println("[DEBUG] init_led() COMPLETED");
+    Serial.flush(); delay(100);
+
+After line ~413 (_post_setup_gpio();):
+    Serial.println("[DEBUG] _post_setup_gpio() COMPLETED");
+    Serial.flush(); delay(100);
