@@ -36,13 +36,14 @@ void _setup_gpio() {
 #endif
 
     // Setup RGB LED pins (common anode - low = on, high = off)
-#if defined(HAS_RGB_LED)
+    // ESP32-32E has separate R,G,B pins, controlled directly via GPIO
+#if defined(RGB_LED_R) && defined(RGB_LED_G) && defined(RGB_LED_B)
     pinMode(RGB_LED_R, OUTPUT);
     pinMode(RGB_LED_G, OUTPUT);
     pinMode(RGB_LED_B, OUTPUT);
-    digitalWrite(RGB_LED_R, HIGH);  // Turn off
-    digitalWrite(RGB_LED_G, HIGH);  // Turn off
-    digitalWrite(RGB_LED_B, HIGH);  // Turn off
+    digitalWrite(RGB_LED_R, HIGH);  // Turn off (common anode)
+    digitalWrite(RGB_LED_G, HIGH);  // Turn off (common anode)
+    digitalWrite(RGB_LED_B, HIGH);  // Turn off (common anode)
 #endif
 
     // Setup audio enable pin (low = enable, high = disable)
