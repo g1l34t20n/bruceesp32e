@@ -18,6 +18,9 @@ CYD28_TouchR touch(CYD28_DISPLAY_HOR_RES_MAX, CYD28_DISPLAY_VER_RES_MAX);
 #endif
 #endif
 
+// Track if LEDC has been initialized for brightness control
+static bool ledcBrightnessInitialized = false;
+
 /***************************************************************************************
 ** Function name: _setup_gpio()
 ** Location: main.cpp
@@ -51,6 +54,11 @@ void _setup_gpio() {
     pinMode(4, OUTPUT);
     digitalWrite(4, HIGH);  // Disable audio by default
 #endif
+
+    // Initialize backlight pin early - turn it on with digitalWrite
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);  // Turn on backlight immediately
+    Serial.println("Backlight initialized (GPIO mode)");
 }
 
 /***************************************************************************************
@@ -88,12 +96,13 @@ void _post_setup_gpio() {
     tft.setTouch(calData);
 #endif
 
-    // Brightness control must be initialized after tft in this case @Pirata
-    pinMode(TFT_BL, OUTPUT);
-    digitalWrite(TFT_BL, HIGH);  // Turn on backlight immediately
+    // Brightness control - initialize LEDC for PWM
+    Serial.println("Initializing LEDC for backlight PWM...");
     ledcSetup(TFT_BRIGHT_CHANNEL, TFT_BRIGHT_FREQ, TFT_BRIGHT_Bits); // Channel 0, 5khz, 8bits
     ledcAttachPin(TFT_BL, TFT_BRIGHT_CHANNEL);
     ledcWrite(TFT_BRIGHT_CHANNEL, 255);
+    ledcBrightnessInitialized = true;
+    Serial.println("LEDC initialized successfully");
 }
 
 /*********************************************************************
@@ -111,7 +120,15 @@ void _setBrightness(uint8_t brightval) {
     else dutyCycle = ((brightval * 255) / 100);
 
     log_i("dutyCycle for bright 0-255: %d", dutyCycle);
-    ledcWrite(TFT_BRIGHT_CHANNEL, dutyCycle); // Channel 0
+    
+    // Only use LEDC if it's been initialized, otherwise use digitalWrite
+    if (ledcBrightnessInitialized) {
+        ledcWrite(TFT_BRIGHT_CHANNEL, dutyCycle); // Channel 0
+    } else {
+        // Before LEDC init, just turn backlight on/off with digitalWrite
+        digitalWrite(TFT_BL, dutyCycle > 0 ? HIGH : LOW);
+        Serial.printf("Brightness set via digitalWrite: %s\n", dutyCycle > 0 ? "ON" : "OFF");
+    }
 }
 
 /*********************************************************************
