@@ -103,6 +103,11 @@ void _post_setup_gpio() {
     ledcWrite(TFT_BRIGHT_CHANNEL, 255);
     ledcBrightnessInitialized = true;
     Serial.println("LEDC initialized successfully");
+    
+    // ESP32-32E needs colorInverted=0 (purple text on black was correct)
+    bruceConfig.colorInverted = 0;
+    tft.invertDisplay(0);
+    Serial.println("Color inversion set to 0 for ESP32-32E");
 }
 
 /*********************************************************************
